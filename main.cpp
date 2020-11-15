@@ -1,6 +1,10 @@
-#include<stdio.h>
-#include<string.h>
+#include <cstdio>
+#include <cstring>
+#include <stack>
+#include <iostream>
+#include <cmath>
 
+using namespace std;
 char *action[13][4] = {   /*ACTION表*/
     "S4#", "S5#", NULL, NULL,
     NULL, NULL, NULL, "acc",
@@ -33,6 +37,58 @@ int goto1[13][3] = {    /*GOTO表*/
     0, 0, 0
 };
 
+bool flag;
+struct BinaryNum {
+  double Value;
+  int Length;
+} LastNum, TempNum;
+stack<BinaryNum> stack_v;
+double Ans;
+
+void DeStatute(int status) {
+  switch (status) {
+    case 1:
+      Ans = stack_v.top().Value;
+      stack_v.pop();
+      break;
+    case 2:
+      TempNum = stack_v.top();
+      stack_v.pop();
+      TempNum.Length = 1;
+      stack_v.push(TempNum);
+      break;
+    case 3:
+      TempNum.Value = 0;
+      TempNum.Length = 0;
+      stack_v.push(TempNum);
+      break;
+    case 4:
+      TempNum.Value = 1;
+      TempNum.Length = 0;
+      stack_v.push(TempNum);
+      break;
+    case 5:
+      TempNum = stack_v.top();
+      stack_v.pop();
+      LastNum = stack_v.top();
+      stack_v.pop();
+      LastNum.Value = LastNum.Value * 2 + TempNum.Value;
+      LastNum.Length++;
+      stack_v.push(LastNum);
+      break;
+    case 6:
+      TempNum = stack_v.top();
+      stack_v.pop();
+      LastNum = stack_v.top();
+      stack_v.pop();
+      LastNum.Value = LastNum.Value + TempNum.Value * pow(2, -TempNum.Length);
+      LastNum.Length = -1;
+      stack_v.push(LastNum);
+      break;
+  }
+}
+
+
 char input[50];
 int len;
 
@@ -41,8 +97,8 @@ void LR() {
   char vn[3] = {'B', 'S', 'N'};
   char *grammar[7] = {"", "E-N#", "S-B#", "B-0#", "B-1#", "S-SB#", "N-S.S#"};
 
-  int stack_a[50];    /*状态栈*/
-  char stack_b[50];      /*符号栈*/
+  int stack_a[50];        /*状态栈*/
+  char stack_b[50];       /*符号栈*/
   int top_a, top_b;
   int step;
   int ip;
@@ -78,7 +134,7 @@ void LR() {
     printf("\t\t");
 
     i = ip;
-    while (i < len)                        /*输出输入串*/
+    while (i < len)               /*输出输入串*/
       printf("%c", input[i++]);
     printf("\t\t");
 
@@ -98,6 +154,7 @@ void LR() {
       return;
     } else if (action[row][column] == "acc") {
       printf("acc!\n");
+      flag = true;
       return;
     } else {
       strcpy(entry, action[row][column]);
@@ -117,7 +174,7 @@ void LR() {
     if (entry[0] == 'r') {                       /*处理归约*/
       pNo = entry[1] - '0';
       strcpy(production, grammar[pNo]);
-
+      DeStatute(pNo);
       column = 0;
       while (production[0] != vn[column])
         column++;
@@ -142,6 +199,7 @@ int main() {
   while (1) {
     printf("\ninput length<50,ending with'#'; '^#' to return!\n");
     len = 0;
+    flag = false;
     do {
       scanf("%c", &c);
       input[len++] = c;
@@ -150,5 +208,11 @@ int main() {
     if (input[0] == '^' && input[1] == '#')
       return 0;
     LR();
+    if (flag) {
+      Ans = stack_v.top().Value;
+      stack_v.pop();
+      cout << "Get the Value:  " << Ans << endl;
+    } else
+      cout << "ERROR!" << endl;
   }
 }
