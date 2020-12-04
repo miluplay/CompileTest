@@ -1,5 +1,4 @@
 #include <cstdio>
-#include <cstdlib>
 #include <cstring>
 #include <stack>
 #include <iostream>
@@ -195,6 +194,60 @@ void LR() {
   }
 }
 
+void PrintTree(string s) {
+  cout << "语法分析树如下：" << endl;
+  char Tree[55][55];
+  for (int i = 0; i < 55; i++)
+    for (int j = 0; j < 55; ++j)
+      Tree[i][j] = ' ';
+  for (int i = 0; i < s.length() - 1; i++) {
+    Tree[0][i] = s[i];
+    if (i + 1 < s.length() - 1 && s[i + 1] == '.') {
+      Tree[0][i] = ' ';
+      Tree[1][i] = s[i];
+    } else if (s[i] == '.') {
+      Tree[0][i] = ' ';
+      Tree[1][i] = '.';
+    } else if (i > 0 && s[i - 1] == '.') {
+      Tree[0][i] = ' ';
+      Tree[1][i] = s[i];
+    }
+  }
+  int hang = 0, yihang = 0;
+  for (int i = 1; i < s.length() - 1; i++) {
+    hang++;
+    if (i == s.length() - 2) {
+      for (int j = 0; j < s.length() - 1; j++)
+        if (Tree[i - 1][j] == '.' && j > 0 && Tree[i - 1][j - 1] == 'S' && j + 1 < s.length() - 1 &&
+            Tree[i - 1][j + 1] == 'S')
+          Tree[i][j] = 'N';
+      continue;
+    }
+    for (int j = 0; j < s.length() - 1; j++) {
+      if (Tree[i - 1][j] == '0' || Tree[i - 1][j] == '1')Tree[i][j] = 'B';
+      else if (Tree[i - 1][j] == 'B')Tree[i][j] = 'S';
+      else if (Tree[i - 1][j] == '.') {
+        Tree[i - 1][j] = ' ';
+        Tree[i][j] = '.';
+        yihang = j;
+      }
+    }
+  }
+  for (int i = 0; i < s.length() - 1; i++)
+    if (Tree[i + 1][yihang + 1] != ' ')Tree[i][yihang + 1] = Tree[i + 1][yihang + 1];
+  for (int i = yihang + 2; i < s.length() - 1; i++) {
+    for (int j = s.length() - 1; j > 0; j--)
+      if (Tree[j][i] != ' ')Tree[j][i] = Tree[j - 1][i];
+    Tree[0][i] = ' ';
+  }
+  for (int i = hang; i >= 0; i--) {
+    for (int j = 0; j < s.length() - 1; j++)cout << Tree[i][j] << " ";
+    cout << endl;
+  }
+  cout << endl;
+  return;
+}
+
 int main() {
   char c;
   FILE *ques = NULL;
@@ -209,11 +262,13 @@ int main() {
 //      input[len++] = c;
 //    } while (c != '#');
 //    getchar();
-    if (input == NULL)break;
     if (input[0] == '^' && input[1] == '#') {
       fclose(ques);
       return 0;
     }
+
+    PrintTree(input);
+
     LR();
     if (flag) {
       Ans = stack_v.top().Value;
