@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <stack>
 #include <iostream>
@@ -196,22 +197,34 @@ void LR() {
 
 int main() {
   char c;
+  FILE *ques = NULL;
+  ques = fopen("C:\\WorkSpace\\CompileTest\\ques.txt", "r");
   while (1) {
     printf("\ninput length<50,ending with'#'; '^#' to return!\n");
     len = 0;
     flag = false;
-    do {
-      scanf("%c", &c);
-      input[len++] = c;
-    } while (c != '#');
-    getchar();
-    if (input[0] == '^' && input[1] == '#')
+    fscanf(ques, "%s", input);
+//    do {
+//      scanf("%c", &c);
+//      input[len++] = c;
+//    } while (c != '#');
+//    getchar();
+    if (input == NULL)break;
+    if (input[0] == '^' && input[1] == '#') {
+      fclose(ques);
       return 0;
+    }
     LR();
     if (flag) {
       Ans = stack_v.top().Value;
       stack_v.pop();
-      cout << "Get the Value:  " << Ans << endl;
+      cout << "\n\nGet the Value:  " << Ans << endl;
+      FILE *ans = NULL;
+      ans = fopen("C:\\WorkSpace\\CompileTest\\ans.txt", "a");
+      string myans = to_string(Ans);
+      fprintf(ans, myans.data());
+      fprintf(ans, "\n");
+      fclose(ans);
     } else
       cout << "ERROR!" << endl;
   }
